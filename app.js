@@ -37,12 +37,7 @@ if (process.env.NODE_ENV === "production") {
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "Jigram.com",
-      "http://jigram.co.kr",
-      "http://54.180.202.180/",
-    ],
+    origin: ["http://localhost:3000"],
     credentials: true,
   })
 );
@@ -51,17 +46,19 @@ app.use("/", express.static(path.join(__dirname, "uploads")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// app.use(cookieParser(process.env.COOKIE_SECRET));
-// app.use(session({
-//     saveUninitialized : false,
-//     secret : process.env.COOKIE_SECRET,
-//     resave : false,
-//     cookie : {
-//         httpOnly: true,
-//         secure: false,
-//         domain: process.env.NODE_ENV === 'production' && '.jigram.co.kr'
-//     }
-// }));
+app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(
+  session({
+    saveUninitialized: false,
+    secret: process.env.COOKIE_SECRET,
+    resave: false,
+    cookie: {
+      httpOnly: true,
+      secure: false,
+      domain: process.env.NODE_ENV === "production" && "http://localhost:3000",
+    },
+  })
+);
 
 app.use(passport.initialize());
 app.use(passport.session());
