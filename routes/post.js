@@ -46,13 +46,13 @@ const upload = multer({
   limits: { fileSize: 20 * 1024 * 1024 },
 });
 
-router.post("/", isLoggedIn, upload.none(), async (req, res, next) => {
+router.post("/", upload.none(), async (req, res, next) => {
   // POST /post
   try {
     const post = await Post.create({
       content: req.body.content,
-      UserId: req.user.id,
-      nickname: req.user.nickname,
+      UserId: req.body.id,
+      nickname: req.body.nickname,
       tag: req.body.tag,
     });
     if (req.body.image) {
@@ -100,13 +100,13 @@ router.post("/", isLoggedIn, upload.none(), async (req, res, next) => {
   }
 });
 
-router.post("/:postid/comment", isLoggedIn, async (req, res, next) => {
+router.post("/:postid/comment", async (req, res, next) => {
   try {
     const comment = await Comment.create({
       content: req.body.comment,
       PostId: parseInt(req.params.postid, 10),
-      UserId: req.user.id,
-      nickname: req.user.nickname,
+      UserId: req.body.id,
+      nickname: req.body.nickname,
     });
     res.status(201).json(comment);
   } catch (error) {
@@ -115,13 +115,14 @@ router.post("/:postid/comment", isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.delete("/:postid", isLoggedIn, async (req, res, next) => {
+router.delete("/:postid", async (req, res, next) => {
   //DELETE /post
   try {
+    console.log(req.body);
     await Post.destroy({
       where: {
         id: req.params.postid,
-        UserId: req.user.id,
+        UserId: req.body.id,
       },
     });
     res.status(200).json({ postid: parseInt(req.params.postid) });
@@ -133,8 +134,7 @@ router.delete("/:postid", isLoggedIn, async (req, res, next) => {
 
 //한장만 올릴거면 upload.single
 router.post("/images", upload.array("image"), async (req, res, next) => {
-  console.log(req);
-  res.json(req.files.map((v) => v.location));
+  res.json(req.files.map((v) => v.filename));
 });
 
 module.exports = router;
