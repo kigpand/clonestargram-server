@@ -37,7 +37,7 @@ if (process.env.NODE_ENV === "production") {
 
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: ["http://localhost:3000", "https://clonestargram.vercel.app"],
     credentials: true,
   })
 );
@@ -55,7 +55,9 @@ app.use(
     cookie: {
       httpOnly: true,
       secure: false,
-      domain: process.env.NODE_ENV === "production" && "http://localhost:3000",
+      domain:
+        process.env.NODE_ENV === "production" &&
+        "https://clonestargram.vercel.app",
     },
   })
 );

@@ -118,7 +118,6 @@ router.post("/:postid/comment", async (req, res, next) => {
 router.delete("/:postid", async (req, res, next) => {
   //DELETE /post
   try {
-    console.log(req.body);
     await Post.destroy({
       where: {
         id: req.params.postid,

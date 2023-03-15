@@ -49,31 +49,35 @@ const upload = multer({
   limits: { fileSize: 20 * 1024 * 1024 },
 });
 
-router.get("/:id", async (req, res, next) => {
+router.get("/", async (req, res, next) => {
   try {
-    const fulluser = await User.findOne({
-      where: { id: req.params.id },
-      attribute: {
-        exclude: ["password"],
-      },
-      include: [
-        {
-          model: Post,
-          attribute: ["id"],
+    if (req.user) {
+      const fulluser = await User.findOne({
+        where: { id: req.user.id },
+        attribute: {
+          exclude: ["password"],
         },
-        {
-          model: User,
-          as: "Followings",
-          attribute: ["id"],
-        },
-        {
-          model: User,
-          as: "Followers",
-          attribute: ["id"],
-        },
-      ],
-    });
-    res.status(200).json(fulluser);
+        include: [
+          {
+            model: Post,
+            attribute: ["id"],
+          },
+          {
+            model: User,
+            as: "Followings",
+            attribute: ["id"],
+          },
+          {
+            model: User,
+            as: "Followers",
+            attribute: ["id"],
+          },
+        ],
+      });
+      res.status(200).json(fulluser);
+    } else {
+      res.status(200).json(null);
+    }
   } catch (error) {
     console.error(error);
     next(error);
@@ -97,7 +101,7 @@ router.post("/login", isNotLoggedIn, (req, res, next) => {
       }
       const fulluser = await User.findOne({
         where: { id: user.id },
-        attribute: {
+        attributes: {
           exclude: ["password"],
         },
         include: [
@@ -107,10 +111,16 @@ router.post("/login", isNotLoggedIn, (req, res, next) => {
           {
             model: User,
             as: "Followings",
+            attributes: {
+              exclude: ["password"],
+            },
           },
           {
             model: User,
             as: "Followers",
+            attributes: {
+              exclude: ["password"],
+            },
           },
         ],
       });
@@ -119,7 +129,7 @@ router.post("/login", isNotLoggedIn, (req, res, next) => {
   })(req, res, next);
 });
 
-router.post("/check", isNotLoggedIn, async (req, res) => {
+router.post("/check", async (req, res) => {
   try {
     const exUser = await User.findOne({
       where: {
@@ -137,7 +147,7 @@ router.post("/check", isNotLoggedIn, async (req, res) => {
   }
 });
 
-router.post("/", isNotLoggedIn, async (req, res, next) => {
+router.post("/", async (req, res, next) => {
   try {
     const hashedPasssword = await bcrypt.hash(req.body.pw, 10);
 
@@ -172,17 +182,16 @@ router.patch("/edit", async (req, res, next) => {
         userImg: req.body.userImg,
       },
       {
-        where: { id: req.body.id },
+        where: { id: req.user.id },
       }
     );
-    console.log(updateUser);
     res.status(200).json(updateUser);
   } catch (error) {
     console.error(error);
   }
 });
 
-router.patch("/:userid/follow", isLoggedIn, async (req, res, next) => {
+router.patch("/:userid/follow", async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { id: req.params.userid } });
     if (!user) {
@@ -196,7 +205,7 @@ router.patch("/:userid/follow", isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.delete("/:userid/follow", isLoggedIn, async (req, res, next) => {
+router.delete("/:userid/follow", async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { id: req.params.userid } });
     if (!user) {
@@ -210,7 +219,7 @@ router.delete("/:userid/follow", isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.get("/followers", isLoggedIn, async (req, res, next) => {
+router.get("/followers", async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { id: req.user.id } });
     if (!user) {
@@ -219,12 +228,11 @@ router.get("/followers", isLoggedIn, async (req, res, next) => {
     const followers = await user.getFollowers();
     res.status(200).json(followers);
   } catch (error) {
-    console.error(error);
     next(error);
   }
 });
 
-router.get("/followings", isLoggedIn, async (req, res, next) => {
+router.get("/followings", async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { id: req.user.id } });
     if (!user) {
@@ -238,7 +246,7 @@ router.get("/followings", isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.post("/find", isLoggedIn, async (req, res, next) => {
+router.post("/find", async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { id: req.body.userid } });
     return res.status(200).json(user);

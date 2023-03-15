@@ -7,7 +7,6 @@ const { Post, User, Image, Comment, Hashtag } = require("../models");
 router.get("/:hashtag", async (req, res, next) => {
   try {
     const where = {};
-    console.log(req.params.hashtag);
     const posts = await Post.findAll({
       where,
       limit: 9,
