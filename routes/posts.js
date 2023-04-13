@@ -13,7 +13,6 @@ router.get("/", async (req, res, next) => {
     }
     const posts = await Post.findAll({
       where,
-      limit: 9,
       order: [
         ["createdAt", "DESC"],
         [Comment, "createdAt", "DESC"],
